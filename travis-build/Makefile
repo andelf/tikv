@@ -47,7 +47,7 @@ prepare_linux: ${LOCAL_DIR}/lib/librocksdb.so ${LOCAL_DIR}/bin/kcov prepare-rust
 
 prepare_brew:
 	brew update && \
-	brew install gflags snappy
+	brew install gflags snappy go
 
 prepare_osx: ${LOCAL_DIR}/lib/librocksdb.dylib prepare-rustfmt | prepare_brew prepare_rust
 
