@@ -1,4 +1,6 @@
 sudo: required
+dist: precise
+group: legacy
 services:
   - docker
 language: rust
@@ -14,6 +16,7 @@ cache:
 matrix:
   include:
     - os: linux
+      sudo: required
       rust: nightly
       env: COMPILER=g++-4.8 RUSTC_DATE=2016-10-06
       addons:
@@ -21,6 +24,7 @@ matrix:
             sources: ['ubuntu-toolchain-r-test']
             packages: ['g++-4.8', 'zlib1g-dev', 'libbz2-dev', 'libsnappy-dev', 'curl', 'libdw-dev', 'libelf-dev', 'elfutils', 'binutils-dev']
     - os: linux
+      sudo: required
       rust: nightly
       env: COMPILER=g++-4.8 RUSTC_DATE=2016-08-06 ENABLE_FEATURES=default SKIP_TESTS=true
       addons:
