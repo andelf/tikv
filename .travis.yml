@@ -1,9 +1,15 @@
-sudo: false
+sudo: required
+services:
+  - docker
 language: rust
 cache:
   directories:
   - $HOME/.cache/
   - $HOME/.cargo/
+  - $HOME/.multirust/
+  - $HOME/build/pingcap/tikv/target
+  - $HOME/build/andelf/tikv/target
+
 
 matrix:
   include:
@@ -24,6 +30,9 @@ matrix:
     - os: osx
       rust: nightly
       env: COMPILER=clang++ RUSTC_DATE=2016-10-06
+
+# before_install:
+#   - docker pull pingcap/pd-server
 
 install:
   - export LOCAL_DIR=$HOME/.cache/
