@@ -20,17 +20,9 @@ panic() {
 }
 
 make format
-git diff-index --quiet HEAD -- || panic "\e[35mplease make format before creating a pr!!!\e[0m" 
+git diff-index --quiet HEAD -- || panic "\e[35mplease make format before creating a pr!!!\e[0m"
 
 trap 'kill $(jobs -p) &> /dev/null || true' EXIT
-
-# start pd
-which pd-server
-if [ $? -eq 0 ]; then
-    pd-server &
-    sleep 3s
-    export PD_ENDPOINTS=127.0.0.1:2379
-fi
 
 if [[ "$ENABLE_FEATURES" = "" ]]; then
     export ENABLE_FEATURES=dev

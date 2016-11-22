@@ -31,8 +31,8 @@ matrix:
       rust: nightly
       env: COMPILER=clang++ RUSTC_DATE=2016-10-06
 
-# before_install:
-#   - docker pull pingcap/pd-server
+before_install:
+  - docker run -d --name pd-test -p 2379:2379 pingcap/pd --client-urls=http://0.0.0.0:2379
 
 install:
   - export LOCAL_DIR=$HOME/.cache/
