@@ -19,8 +19,8 @@ panic() {
     exit 1
 }
 
-make format
-git diff-index --quiet HEAD -- || panic "\e[35mplease make format before creating a pr!!!\e[0m"
+# make format
+# git diff-index --quiet HEAD -- || panic "\e[35mplease make format before creating a pr!!!\e[0m"
 
 trap 'kill $(jobs -p) &> /dev/null || true' EXIT
 
