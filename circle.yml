@@ -78,4 +78,4 @@ test:
     - docker run -d --name pd2 -p 22379:2379 pingcap/pd --client-urls=http://0.0.0.0:2379
   override:
     - ./run_circleci_test.sh:
-      parallel: true
+        parallel: true
