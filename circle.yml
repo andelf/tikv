@@ -93,4 +93,5 @@ test:
         3)
           cargo test --features "default" -- storage;
           ;;
-      esac
+      esac:
+        parallel: true
