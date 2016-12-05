@@ -77,21 +77,5 @@ test:
     - docker run -d --name pd1 -p 12379:2379 pingcap/pd --client-urls=http://0.0.0.0:2379
     - docker run -d --name pd2 -p 22379:2379 pingcap/pd --client-urls=http://0.0.0.0:2379
   override:
-    - |
-      case $CIRCLE_NODE_INDEX in
-        0)
-          make format && git diff-index --quiet HEAD -- || (echo please make format before creating a pr!; exit 1);
-          cargo test --features "default" --bench benches -- --nocapture;
-          cargo test --features "default" -- --skip coprocessor --skip raft --skip storage;
-          ;;
-        1)
-          cargo test --features "default" -- coprocessor;
-          ;;
-        2)
-          cargo test --features "default" -- raftstore;
-          ;;
-        3)
-          cargo test --features "default" -- storage;
-          ;;
-      esac:
-        parallel: true
+    - ./run_circleci_test.sh:
+      parallel: true
