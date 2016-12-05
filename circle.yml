@@ -13,6 +13,7 @@ machine:
     LOCAL_PREFIX: "$HOME/.local"
     # used by cargo
     LIBRARY_PATH: "$LIBRARY_PATH:$HOME/.local/lib"
+    RUST_TEST_THREADS: 1
     RUST_BACKTRACE: 1
     RUSTFLAGS: "-Dwarnings"
     # used by test
@@ -76,6 +77,20 @@ test:
     - docker run -d --name pd1 -p 12379:2379 pingcap/pd --client-urls=http://0.0.0.0:2379
     - docker run -d --name pd2 -p 22379:2379 pingcap/pd --client-urls=http://0.0.0.0:2379
   override:
-    - make format && git diff-index --quiet HEAD -- || (echo please make format before creating a pr!; exit 1)
-    - cargo test --features "default" -- --nocapture
-    - cargo test --features "default" --bench benches -- --nocapture
+    - |
+      case $CIRCLE_NODE_INDEX in
+        0)
+          make format && git diff-index --quiet HEAD -- || (echo please make format before creating a pr!; exit 1);
+          cargo test --features "default" --bench benches -- --nocapture;
+          cargo test --features "default" -- --skip coprocessor --skip raft --skip storage;
+          ;;
+        1)
+          cargo test --features "default" -- coprocessor;
+          ;;
+        2)
+          cargo test --features "default" -- raftstore;
+          ;;
+        3)
+          cargo test --features "default" -- storage;
+          ;;
+      esac
