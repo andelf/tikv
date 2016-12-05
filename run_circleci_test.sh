@@ -15,12 +15,16 @@ case $CIRCLE_NODE_INDEX in
         ;;
     2)
         cargo test --features "default" -- \
-              raftstore::store
+              raftstore::store \
+              raftstore::test_split_region \
+              raftstore::test_snap
         ;;
     3)
         cargo test --features "default" -- \
-              raftstore \
               --skip raftstore::test_multi \
-              --skip raftstore::store
+              --skip raftstore::store \
+              --skip raftstore::test_split_region \
+              --skip raftstore::test_snap \
+              raftstore
         ;;
 esac
