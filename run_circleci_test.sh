@@ -15,6 +15,7 @@ if test $(( 1 % $CIRCLE_NODE_TOTAL)) -eq $CIRCLE_NODE_INDEX; then
           --skip raftstore::test_multi \
           --skip raftstore::test_tombstone \
           --skip raftstore::test_compact_log \
+          --skip raftstore::test_snap \
           raftstore
 fi
 
