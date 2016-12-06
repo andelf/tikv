@@ -17,7 +17,9 @@ case $CIRCLE_NODE_INDEX in
         cargo test --features "default" -- \
               raftstore::store \
               raftstore::test_split_region \
-              raftstore::test_snap
+              raftstore::test_snap \
+              raftstore::coprocessor \
+              raftstore::test_compact
         ;;
     3)
         cargo test --features "default" -- \
@@ -25,6 +27,8 @@ case $CIRCLE_NODE_INDEX in
               --skip raftstore::store \
               --skip raftstore::test_split_region \
               --skip raftstore::test_snap \
+              --skip raftstore::coprocessor \
+              --skip raftstore::test_compact \
               raftstore
         ;;
 esac
