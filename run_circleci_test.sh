@@ -14,6 +14,7 @@ if test $(( 1 % $CIRCLE_NODE_TOTAL)) -eq $CIRCLE_NODE_INDEX; then
           --skip raftstore::test_single \
           --skip raftstore::test_multi \
           --skip raftstore::test_tombstone \
+          --skip raftstore::test_compact_log \
           raftstore
 fi
 
@@ -21,6 +22,8 @@ fi
 if test $(( 2 % $CIRCLE_NODE_TOTAL)) -eq $CIRCLE_NODE_INDEX; then
     cargo test --features "default" -- raftstore::test_single
     cargo test --features "default" -- raftstore::test_tombstone
+    cargo test --features "default" -- raftstore::test_compact_log
+    cargo test --features "default" -- raftstore::test_snap
 fi
 
 # Job 4
