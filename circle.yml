@@ -3,7 +3,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: andelf/circleci-build:0.1.3
+      - image: andelf/circleci-build:0.1.4
     working_directory: /go/src/github.com/pingcap/tikv
     steps:
       - checkout
