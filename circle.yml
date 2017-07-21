@@ -7,6 +7,11 @@ jobs:
     working_directory: /go/src/github.com/pingcap/tikv
     steps:
       - checkout
+
+      - restore_cache:
+          keys:
+            - tikv-{{ checksum Cargo.lock }}
+            - tikv- # used if checksum fails
       - run:
           name: "Github Fixture"
           command: sed -i 's/github/git-non-exist-hub/g' ~/.gitconfig
@@ -22,3 +27,14 @@ jobs:
       - run:
           name: "Bench"
           command: cargo test --features "grpc/link-sys" --bench benches -- --nocapture
+
+      - run:
+          name: "Clean Unused Cache"
+          command: rm target/debug/* || true
+
+      - save_cache:
+          key: tikv-{{ checksum Cargo.lock }}
+          paths:
+            - target
+            - ~/.cargo/git
+            - ~/.cargo/registry
