@@ -8,6 +8,10 @@ jobs:
     steps:
       - checkout
       - run:
+          name: "Github Fixture"
+          command: sed -i 's/github/git-non-exist-hub/g' ~/.gitconfig
+
+      - run:
           name: "Build"
           command: cargo build --features "grpc/link-sys"
 
