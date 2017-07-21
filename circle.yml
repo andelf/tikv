@@ -10,7 +10,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - tikv-{{ checksum Cargo.lock }}
+            - tikv-{{ checksum "Cargo.lock" }}
             - tikv- # used if checksum fails
       - run:
           name: "Github Fixture"
@@ -33,7 +33,7 @@ jobs:
           command: rm target/debug/* || true
 
       - save_cache:
-          key: tikv-{{ checksum Cargo.lock }}
+          key: tikv-{{ checksum "Cargo.lock" }}
           paths:
             - target
             - ~/.cargo/git
