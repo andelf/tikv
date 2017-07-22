@@ -3,7 +3,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: andelf/circleci-build:0.1.4
+      - image: andelf/circleci-build:0.1.5
     working_directory: /go/src/github.com/pingcap/tikv
     steps:
       - checkout
@@ -15,6 +15,10 @@ jobs:
       - run:
           name: "Github Fixture"
           command: sed -i 's/github/git-non-exist-hub/g' ~/.gitconfig
+
+      - run:
+          name: "Format Check"
+          command: find . -iname '*.rs' | xargs cargo fmt -- --write-mode overwrite
 
       - run:
           name: "Build"
