@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<testsuite name="info.classmethod.testing.HogeTest" tests="4" errors="1" failures="1" time="0.003">
+<testsuite id="2333" name="info.classmethod.testing.HogeTest" tests="4" failures="2" time="0.003">
   <testcase classname="info.classmethod.testing.HogeTest" name="testCase01" time="0.001" />
   <testcase classname="info.classmethod.testing.HogeTest" name="testCase02" time="0.001">
     <failure type="java.lang.AssertionError" message="test failed" >java.lang.AssertionError: test failed
@@ -14,8 +14,8 @@
   at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:390)
   at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:197)</failure>
   </testcase>
-  <testcase classname="info.classmethod.testing.HogeTest" name="testCase03" time="0.101">
-    <error type="java.lang.NullPointerException" message="NPE" >java.lang.NullPointerException: NPE
+  <testcase classname="info.classmethod.testing.HogeTest" name="testCase03" time="0.001">
+    <failure type="java.lang.NullPointerException" message="NPE" >java.lang.NullPointerException: NPE
   at jp.classmethod.testing.examples.core.runner.DynamicTestsRunnerExample$1.invokeTest(DynamicTestsRunnerExample.java:36)
   at jp.classmethod.testing.core.runner.DynamicTestsRunner.invokeTest(DynamicTestsRunner.java:86)
   at jp.classmethod.testing.core.runner.DynamicTestsRunner.run(DynamicTestsRunner.java:68)
@@ -24,11 +24,9 @@
   at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:467)
   at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:683)
   at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:390)
-  at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:197)</error>
+  at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:197)</failure>
   </testcase>
-  <testcase classname="info.classmethod.testing.HogeTest" name="testCase04" time="0.000">
-    <skipped/>
-  </testcase>
+  <testcase classname="info.classmethod.testing.HogeTest" name="testCase04" time="0.000" />
   <system-out><![CDATA[sdtout!]]></system-out>
   <system-err><![CDATA[stderr!]]></system-err>
 </testsuite>
