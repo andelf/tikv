@@ -20,17 +20,17 @@ jobs:
           name: "Format Check"
           command: find . -iname '*.rs' | xargs cargo fmt -- --write-mode overwrite
 
-      - run:
-          name: "Build"
-          command: cargo build --features "grpc/link-sys"
+#      - run:
+#          name: "Build"
+#          command: cargo build --features "grpc/link-sys"
 
-      - run:
-          name: "Test"
-          command: cargo test --features "grpc/link-sys" -- --nocapture
+#      - run:
+#          name: "Test"
+#          command: cargo test --features "grpc/link-sys" -- --nocapture
 
-      - run:
-          name: "Bench"
-          command: cargo test --features "grpc/link-sys" --bench benches -- --nocapture
+#      - run:
+#          name: "Bench"
+#          command: cargo test --features "grpc/link-sys" --bench benches -- --nocapture
 
       - run:
           name: "Clean Unused Cache"
