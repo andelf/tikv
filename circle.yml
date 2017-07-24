@@ -36,6 +36,10 @@ jobs:
           name: "Clean Unused Cache"
           command: rm target/debug/* || true
 
+      - run:
+          name: "23333"
+          command: cp tests.xml $CIRCLE_TEST_REPORTS/junit/
+
       - save_cache:
           key: tikv-{{ checksum "Cargo.lock" }}
           paths:
