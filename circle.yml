@@ -38,7 +38,7 @@ jobs:
 
       - run:
           name: "23333"
-          command: mkdir -p test-results/junit && cp tests.xml test-results/junit
+          command: mkdir -p test-results/junit && cp tests.xml test-results/junit && cp tests.xml test-results/junit/tests2.xml
 
       - store_test_results:
           path: test-results/junit
