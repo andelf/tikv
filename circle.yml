@@ -40,6 +40,10 @@ jobs:
           name: "23333"
           command: mkdir -p test-results/junit && cp tests.xml test-results/junit && cp tests.xml test-results/junit/tests2.xml
 
+      - run:
+          name: "force fail"
+          command: exit -1
+
       - store_test_results:
           path: test-results/junit
 
