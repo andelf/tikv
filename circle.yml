@@ -38,7 +38,7 @@ jobs:
 
       - run:
           name: "23333"
-          command: cp tests.xml $CIRCLE_TEST_REPORTS/junit/
+          command: mkdir -p $CIRCLE_TEST_REPORTS/junit && cp tests.xml $CIRCLE_TEST_REPORTS/junit/
 
       - save_cache:
           key: tikv-{{ checksum "Cargo.lock" }}
