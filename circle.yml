@@ -7,7 +7,6 @@ jobs:
     working_directory: /go/src/github.com/pingcap/tikv
     steps:
       - checkout
-
       - restore_cache:
           keys:
             - tikv-{{ checksum "Cargo.lock" }}
