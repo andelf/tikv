@@ -46,10 +46,10 @@ jobs:
               cp -i $f ./out/tests/
             done
 
-    - persist_to_workspace:
-        root: out
-        paths:
-          - tests
+      - persist_to_workspace:
+          root: out
+          paths:
+            - tests
 
   test:
     working_directory: /go/src/github.com/pingcap/tikv
