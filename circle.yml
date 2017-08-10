@@ -4,7 +4,7 @@ jobs:
   build:
     working_directory: /go/src/github.com/pingcap/tikv
     docker:
-      - image: andelf/circleci-build:0.1.6
+      - image: andelf/pingcap-build:0.1.8
     steps:
       - checkout
       - restore_cache:
@@ -53,7 +53,7 @@ jobs:
   test:
     working_directory: /go/src/github.com/pingcap/tikv
     docker:
-      - image: andelf/circleci-build:0.1.6
+      - image: andelf/pingcap-build:0.1.8
     steps:
       - attach_workspace:
           at: ~/out
