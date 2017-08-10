@@ -21,7 +21,7 @@ jobs:
 
       - run:
           name: "Build"
-          command: cargo build --features "grpcio/link-sys" --all
+          command: cargo build --features "grpcio/link-sys"
 
       - run:
           name: "Build Tests"
