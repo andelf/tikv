@@ -24,16 +24,8 @@ jobs:
           command: cargo build --features "grpcio/link-sys"
 
       - run:
-          name: "Test"
-          command: cargo test --features "grpcio/link-sys" -- --nocapture
-
-      - run:
-          name: "Bench"
-          command: cargo test --features "grpcio/link-sys" --bench benches -- --nocapture
-
-      - run:
-          name: "Clean Unused Cache"
-          command: rm target/debug/* || true
+          name: "Test Build"
+          command: cargo test --features "grpcio/link-sys" --no-run -- --nocapture
 
       - save_cache:
           key: tikv-{{ checksum "Cargo.lock" }}
@@ -41,3 +33,26 @@ jobs:
             - target
             - ~/.cargo/git
             - ~/.cargo/registry
+
+  test:
+    docker:
+      - image: andelf/circleci-build:0.1.6
+    working_directory: /go/src/github.com/pingcap/tikv
+    steps:
+      - run:
+          name: "Test"
+          command: cargo test --features "grpcio/link-sys" -- --nocapture
+
+      - run:
+          name: "Bench"
+          command: cargo test --features "grpcio/link-sys" --bench benches -- --nocapture
+
+
+workflows:
+  version: 2
+  default-workflow:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
