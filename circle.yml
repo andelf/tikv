@@ -25,7 +25,7 @@ jobs:
 
       - run:
           name: "Build Tests"
-          command: cargo test --features "grpcio/link-sys" --no-run | tee test_files.json
+          command: cargo test --features "grpcio/link-sys" --no-run --message-format=json | tee test_files.json
 
       - run:
           name: "Save Tests"
