@@ -1,10 +1,13 @@
+defaults: &defaults
+  working_directory: /go/src/github.com/pingcap/tikv
+  docker:
+    - image: andelf/circleci-build:0.1.6
+
 version: 2
 
 jobs:
   build:
-    docker:
-      - image: andelf/circleci-build:0.1.6
-    working_directory: /go/src/github.com/pingcap/tikv
+    <<: *defaults
     steps:
       - checkout
       - restore_cache:
@@ -24,8 +27,12 @@ jobs:
           command: cargo build --features "grpcio/link-sys"
 
       - run:
-          name: "Test Build"
-          command: cargo test --features "grpcio/link-sys" --no-run -- --nocapture
+          name: "Build Tests"
+          command: >
+            ( cargo test --features "grpcio/link-sys" --no-run --message-format=json;
+              cargo test --features "grpcio/link-sys" --bench benches ) |
+              jq -r 'select(.profile.test) | .filenames[]' |
+              tee test.filenames
 
       - save_cache:
           key: tikv-{{ checksum "Cargo.lock" }}
@@ -34,19 +41,27 @@ jobs:
             - ~/.cargo/git
             - ~/.cargo/registry
 
+      - run:
+          name: "Save Workspace"
+          command: |
+            mkdir -p ./out/tests
+            for f in $(cat test.filenames); do
+              cp -i $f ./out/tests/
+            done
+
+    - persist_to_workspace:
+        root: out
+        paths:
+          - tests
+
   test:
-    docker:
-      - image: andelf/circleci-build:0.1.6
-    working_directory: /go/src/github.com/pingcap/tikv
+    <<: *defaults
     steps:
+      - attach_workspace:
+          at: ~/out
       - run:
           name: "Test"
-          command: cargo test --features "grpcio/link-sys" -- --nocapture
-
-      - run:
-          name: "Bench"
-          command: cargo test --features "grpcio/link-sys" --bench benches -- --nocapture
-
+          command: find ~/out -type f -perm +111 -exec {} \;
 
 workflows:
   version: 2
