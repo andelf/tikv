@@ -25,14 +25,12 @@ jobs:
 
       - run:
           name: "Build Tests"
-          command: cargo test --features "grpcio/link-sys" --no-run --message-format=json || true
+          command: cargo test --features "grpcio/link-sys" --no-run || true
 
       - run:
           name: "Save Tests"
           command: >
-            cargo test --features "grpcio/link-sys" --no-run --message-format=json |
-              jq -r 'select(.profile.test) | .filenames[]' |
-              tee test.filenames
+            cargo test --features "grpcio/link-sys" --no-run --message-format=json | jq -r 'select(.profile.test) | .filenames[]' | tee test.filenames
 
       - save_cache:
           key: tikv-{{ checksum "Cargo.lock" }}
