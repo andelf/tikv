@@ -3,7 +3,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: andelf/circleci-build:0.1.5
+      - image: andelf/circleci-build:0.1.6
     working_directory: /go/src/github.com/pingcap/tikv
     steps:
       - checkout
@@ -19,32 +19,21 @@ jobs:
           name: "Format Check"
           command: find . -iname '*.rs' | xargs cargo fmt -- --write-mode overwrite
 
-#      - run:
-#          name: "Build"
-#          command: cargo build --features "grpc/link-sys"
+      - run:
+          name: "Build"
+          command: cargo build --features "grpc/link-sys"
 
-#      - run:
-#          name: "Test"
-#          command: cargo test --features "grpc/link-sys" -- --nocapture
+      - run:
+          name: "Test"
+          command: cargo test --features "grpc/link-sys" -- --nocapture
 
-#      - run:
-#          name: "Bench"
-#          command: cargo test --features "grpc/link-sys" --bench benches -- --nocapture
+      - run:
+          name: "Bench"
+          command: cargo test --features "grpc/link-sys" --bench benches -- --nocapture
 
       - run:
           name: "Clean Unused Cache"
           command: rm target/debug/* || true
-
-      - run:
-          name: "23333"
-          command: mkdir -p test-results/junit && cp tests.xml test-results/junit && cp tests.xml test-results/junit/tests2.xml
-
-      - run:
-          name: "force fail"
-          command: exit -1
-
-      - store_test_results:
-          path: test-results/junit
 
       - save_cache:
           key: tikv-{{ checksum "Cargo.lock" }}
