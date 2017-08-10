@@ -1,13 +1,10 @@
-defaults: &defaults
-  working_directory: /go/src/github.com/pingcap/tikv
-  docker:
-    - image: andelf/circleci-build:0.1.6
-
 version: 2
 
 jobs:
   build:
-    <<: *defaults
+    working_directory: /go/src/github.com/pingcap/tikv
+    docker:
+      - image: andelf/circleci-build:0.1.6
     steps:
       - checkout
       - restore_cache:
@@ -55,7 +52,9 @@ jobs:
           - tests
 
   test:
-    <<: *defaults
+    working_directory: /go/src/github.com/pingcap/tikv
+    docker:
+      - image: andelf/circleci-build:0.1.6
     steps:
       - attach_workspace:
           at: ~/out
