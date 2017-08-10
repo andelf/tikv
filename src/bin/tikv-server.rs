@@ -65,7 +65,7 @@ use tikv::util::collections::HashMap;
 use tikv::util::logger::{self, StderrLogger};
 use tikv::util::file_log::RotatingFileLogger;
 use tikv::util::transport::SendCh;
-use tikv::util::properties::UserPropertiesCollectorFactory;
+use tikv::util::properties::{MvccPropertiesCollectorFactory, SizePropertiesCollectorFactory};
 use tikv::server::{DEFAULT_LISTENING_ADDR, DEFAULT_CLUSTER_ID, Server, Node, Config,
                    create_raft_storage};
 use tikv::server::transport::ServerRaftStoreRouter;
@@ -73,7 +73,7 @@ use tikv::server::resolve;
 use tikv::raftstore::store::{self, SnapManager};
 use tikv::pd::{RpcClient, PdClient};
 use tikv::raftstore::store::keys::region_raft_prefix_len;
-use tikv::util::time_monitor::TimeMonitor;
+use tikv::util::time::Monitor;
 
 const KB: u64 = 1024;
 const MB: u64 = 1024 * KB;
@@ -585,8 +585,12 @@ fn get_rocksdb_default_cf_option(config: &toml::Value, total_mem: u64) -> Column
         align_to_mb((total_mem as f64 * DEFAULT_BLOCK_CACHE_RATIO[0]) as u64) as i64;
     default_values.use_bloom_filter = true;
     default_values.whole_key_filtering = true;
+    default_values.compaction_pri = 3;
 
-    get_rocksdb_cf_option(config, "defaultcf", default_values)
+    let mut cf_opts = get_rocksdb_cf_option(config, "defaultcf", default_values);
+    let f = Box::new(SizePropertiesCollectorFactory::default());
+    cf_opts.add_table_properties_collector_factory("tikv.size-properties-collector", f);
+    cf_opts
 }
 
 fn get_rocksdb_write_cf_option(config: &toml::Value, total_mem: u64) -> ColumnFamilyOptions {
@@ -595,6 +599,7 @@ fn get_rocksdb_write_cf_option(config: &toml::Value, total_mem: u64) -> ColumnFa
         align_to_mb((total_mem as f64 * DEFAULT_BLOCK_CACHE_RATIO[1]) as u64) as i64;
     default_values.use_bloom_filter = true;
     default_values.whole_key_filtering = false;
+    default_values.compaction_pri = 3;
 
     let mut cf_opts = get_rocksdb_cf_option(config, "writecf", default_values);
     // Prefix extractor(trim the timestamp at tail) for write cf.
@@ -604,8 +609,10 @@ fn get_rocksdb_write_cf_option(config: &toml::Value, total_mem: u64) -> ColumnFa
     // Create prefix bloom filter for memtable.
     cf_opts.set_memtable_prefix_bloom_size_ratio(0.1 as f64);
     // Collects user defined properties.
-    let f = Box::new(UserPropertiesCollectorFactory::default());
-    cf_opts.add_table_properties_collector_factory("tikv.user-properties-collector", f);
+    let f = Box::new(MvccPropertiesCollectorFactory::default());
+    cf_opts.add_table_properties_collector_factory("tikv.mvcc-properties-collector", f);
+    let f = Box::new(SizePropertiesCollectorFactory::default());
+    cf_opts.add_table_properties_collector_factory("tikv.size-properties-collector", f);
     cf_opts
 }
 
@@ -659,10 +666,6 @@ fn adjust_end_points_by_cpu_num(total_cpu_num: usize) -> usize {
     } else {
         4
     }
-}
-
-fn adjust_sched_workers_by_cpu_num(total_cpu_num: usize) -> usize {
-    if total_cpu_num >= 16 { 8 } else { 4 }
 }
 
 // TODO: merge this function with Config::new
@@ -786,21 +789,19 @@ fn build_cfg(matches: &ArgMatches,
     cfg_f64(&mut cfg.storage.gc_ratio_threshold,
             config,
             "storage.gc-ratio-threshold");
-    cfg_usize(&mut cfg.storage.sched_notify_capacity,
+    cfg_usize(&mut cfg.storage.scheduler_notify_capacity,
               config,
               "storage.scheduler-notify-capacity");
-    cfg_usize(&mut cfg.storage.sched_msg_per_tick,
+    cfg_usize(&mut cfg.storage.scheduler_message_per_tick,
               config,
               "storage.scheduler-messages-per-tick");
-    cfg_usize(&mut cfg.storage.sched_concurrency,
+    cfg_usize(&mut cfg.storage.scheduler_concurrency,
               config,
               "storage.scheduler-concurrency");
-    if !cfg_usize(&mut cfg.storage.sched_worker_pool_size,
-                  config,
-                  "storage.scheduler-worker-pool-size") {
-        cfg.storage.sched_worker_pool_size = adjust_sched_workers_by_cpu_num(total_cpu_num);
-    }
-    cfg_usize(&mut cfg.storage.sched_too_busy_threshold,
+    cfg_usize(&mut cfg.storage.scheduler_worker_pool_size,
+              config,
+              "storage.scheduler-worker-pool-size");
+    cfg_usize(&mut cfg.storage.scheduler_too_busy_threshold,
               config,
               "storage.scheduler-too-busy-threshold");
 
@@ -866,7 +867,7 @@ fn run_raft_server(pd_client: RpcClient,
                    total_mem: u64) {
     info!("tikv server config: {:?}", cfg);
 
-    let store_path = Path::new(&cfg.storage.path);
+    let store_path = Path::new(&cfg.storage.data_dir);
     let lock_path = store_path.join(Path::new("LOCK"));
     let db_path = store_path.join(Path::new("db"));
     let snap_path = store_path.join(Path::new("snap"));
@@ -1059,20 +1060,18 @@ fn main() {
         exit_with_err(format!("{:?}", e));
     }
 
-    let pd_endpoints = matches.value_of("pd-endpoints")
-        .map(|s| s.to_owned())
-        .or_else(|| get_toml_string_opt(&config, "pd.endpoints"))
+    let pd_endpoints: Vec<_> = matches.values_of("pd-endpoints")
+        .map(|s| s.map(|s| s.to_owned()).collect())
+        .or_else(|| {
+            get_toml_string_opt(&config, "pd.endpoints").map(|s| {
+                s.split(',')
+                    .map(|s| s.to_owned())
+                    .collect()
+            })
+        })
         .expect("empty pd endpoints");
 
-    for addr in pd_endpoints.split(',')
-        .map(|s| s.trim())
-        .filter_map(|s| if s.is_empty() {
-            None
-        } else if s.starts_with("http://") {
-            Some(&s[7..])
-        } else {
-            Some(s)
-        }) {
+    for addr in &pd_endpoints {
         if let Err(e) = util::config::check_addr(addr) {
             panic!("{:?}", e);
         }
@@ -1095,12 +1094,12 @@ fn main() {
     let mut cfg = build_cfg(&matches, &config, cluster_id, addr, total_cpu_num as usize);
     cfg.labels = get_store_labels(&matches, &config);
     let (store_path, backup_path) = get_data_and_backup_dirs(&matches, &config);
-    cfg.storage.path = store_path;
+    cfg.storage.data_dir = store_path;
 
     if cluster_id == DEFAULT_CLUSTER_ID {
         panic!("in raftkv, cluster_id must greater than 0");
     }
-    let _m = TimeMonitor::default();
+    let _m = Monitor::default();
     run_raft_server(pd_client, cfg, &backup_path, &config, total_mem);
 }
 

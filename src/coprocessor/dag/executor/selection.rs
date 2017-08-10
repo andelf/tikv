@@ -16,10 +16,12 @@ use std::rc::Rc;
 use tipb::executor::Selection;
 use tipb::schema::ColumnInfo;
 use tipb::expression::Expr;
-use super::super::xeval::{Evaluator, EvalContext};
-use super::super::Result;
+
+use coprocessor::metrics::*;
+use coprocessor::select::xeval::{Evaluator, EvalContext};
+use coprocessor::Result;
+
 use super::{Row, Executor, ExprColumnRefVisitor, inflate_with_col_for_dag};
-use super::super::metrics::*;
 
 pub struct SelectionExecutor<'a> {
     conditions: Vec<Expr>,
@@ -76,14 +78,15 @@ impl<'a> Executor for SelectionExecutor<'a> {
 mod tests {
     use std::i64;
 
-    use storage::Statistics;
+    use kvproto::kvrpcpb::IsolationLevel;
     use protobuf::RepeatedField;
-    use util::codec::number::NumberEncoder;
+    use tipb::executor::TableScan;
     use tipb::expression::{Expr, ExprType};
+
     use coprocessor::codec::mysql::types;
     use coprocessor::codec::datum::Datum;
-    use tipb::executor::TableScan;
-    use kvproto::kvrpcpb::IsolationLevel;
+    use storage::{Statistics, SnapshotStore};
+    use util::codec::number::NumberEncoder;
 
     use super::*;
     use super::super::topn::test::gen_table_data;
@@ -148,14 +151,12 @@ mod tests {
         let key_ranges = vec![get_range(tid, 0, i64::MAX)];
 
         let (snapshot, start_ts) = test_store.get_snapshot();
+        let store = SnapshotStore::new(snapshot, start_ts, IsolationLevel::SI);
+
         let mut statistics = Statistics::default();
 
-        let inner_table_scan = TableScanExecutor::new(table_scan,
-                                                      key_ranges,
-                                                      snapshot,
-                                                      &mut statistics,
-                                                      start_ts,
-                                                      IsolationLevel::SI);
+        let inner_table_scan =
+            TableScanExecutor::new(table_scan, key_ranges, store, &mut statistics);
 
         // selection executor
         let mut selection = Selection::new();
@@ -203,14 +204,11 @@ mod tests {
         let key_ranges = vec![get_range(tid, 0, i64::MAX)];
 
         let (snapshot, start_ts) = test_store.get_snapshot();
+        let store = SnapshotStore::new(snapshot, start_ts, IsolationLevel::SI);
         let mut statistics = Statistics::default();
 
-        let inner_table_scan = TableScanExecutor::new(table_scan,
-                                                      key_ranges,
-                                                      snapshot,
-                                                      &mut statistics,
-                                                      start_ts,
-                                                      IsolationLevel::SI);
+        let inner_table_scan =
+            TableScanExecutor::new(table_scan, key_ranges, store, &mut statistics);
 
         // selection executor
         let mut selection = Selection::new();
