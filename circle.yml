@@ -21,12 +21,12 @@ jobs:
 
       - run:
           name: "Build"
-          command: cargo build --features "grpcio/link-sys"
+          command: cargo build --features "grpcio/link-sys" --all
 
       - run:
           name: "Build Tests"
           command: >
-            cargo test --features "grpcio/link-sys" --no-run --all --message-format=json |
+            cargo test --features "grpcio/link-sys" --no-run --message-format=json |
               jq -r 'select(.profile.test) | .filenames[]' |
               tee test.filenames
 
