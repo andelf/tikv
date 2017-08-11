@@ -25,11 +25,12 @@ jobs:
 
       - run:
           name: "Build Tests"
-          command: cargo test --features "grpcio/link-sys" --no-run --message-format=json > test_files.json
+          command: cargo test --features "grpcio/link-sys" --no-run --message-format=json
 
       - run:
           name: "Save Tests"
           command: |
+            cargo test --features "grpcio/link-sys" --no-run --message-format=json > test_files.json
             cat test_files.json | jq -r 'select(.profile.test) | .filenames[]' | tee test.filenames
 
       - save_cache:
