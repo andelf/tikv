@@ -25,13 +25,7 @@ jobs:
 
       - run:
           name: "Build Tests"
-          command: cargo test --features "grpcio/link-sys" --no-run --message-format=json
-
-      - run:
-          name: "Save Tests"
-          command: |
-            cargo test --features "grpcio/link-sys" --no-run --message-format=json > test_files.json
-            cat test_files.json | jq -r 'select(.profile.test) | .filenames[]' | tee test.filenames
+          command: cargo test --features "grpcio/link-sys" --no-run
 
       - save_cache:
           key: tikv-{{ checksum "Cargo.lock" }}
@@ -41,34 +35,5 @@ jobs:
             - ~/.cargo/registry
 
       - run:
-          name: "Save Workspace"
-          command: |
-            mkdir -p ./out/tests
-            for f in $(cat test.filenames); do
-              cp -i $f ./out/tests/
-            done
-
-      - persist_to_workspace:
-          root: out
-          paths:
-            - tests
-
-  test:
-    working_directory: /go/src/github.com/pingcap/tikv
-    docker:
-      - image: andelf/pingcap-build:0.1.8
-    steps:
-      - attach_workspace:
-          at: ~/out
-      - run:
           name: "Test"
-          command: find ~/out -type f -perm +111 -exec {} \;
-
-workflows:
-  version: 2
-  default-workflow:
-    jobs:
-      - build
-      - test:
-          requires:
-            - build
+          command: cargo test --features "grpcio/link-sys"
