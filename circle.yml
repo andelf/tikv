@@ -29,8 +29,8 @@ jobs:
 
       - run:
           name: "Save Tests"
-          command: >
-             cat test_files.json | jq -r 'select(.profile.test) | .filenames[]' | tee test.filenames
+          command: |
+            cat test_files.json | jq -r 'select(.profile.test) | .filenames[]' | tee test.filenames
 
       - save_cache:
           key: tikv-{{ checksum "Cargo.lock" }}
