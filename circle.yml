@@ -36,4 +36,4 @@ jobs:
 
       - run:
           name: "Test"
-          command: cargo test --features "grpcio/link-sys"
+          command: cargo test --all --features "grpcio/link-sys"
