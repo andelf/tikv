@@ -17,9 +17,11 @@ mem-profiling = ["jemallocator"]
 
 [lib]
 name = "tikv"
+path = "src/lib.rs"
 
 [[bin]]
 name = "tikv-server"
+path = "src/bin/tikv-server.rs"
 
 [[bin]]
 name = "bench-tikv"
@@ -27,9 +29,11 @@ path = "benches/bin/bench-tikv.rs"
 
 [[bin]]
 name = "tikv-ctl"
+path = "src/bin/tikv-ctl.rs"
 
 [[test]]
 name = "tests"
+path = "tests/tests.rs"
 
 [dependencies]
 log = "0.3"
